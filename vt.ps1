@@ -1,11 +1,8 @@
 [CmdletBinding()]
     param (
-        [Parameter(Mandatory=$False)]
-        [string]$ip,
-        [Parameter(Mandatory=$False)]
-        [string]$domain,
-        [Parameter(Mandatory=$False)]
-        [string]$hash
+        [Parameter(Mandatory=$False,ParameterSetName = 'ip')][string]$ip,
+        [Parameter(Mandatory=$False,ParameterSetName = 'domain')][string]$domain,
+        [Parameter(Mandatory=$False,ParameterSetName = 'hash')][string]$hash
     )
 
 #Set up proxy auth
@@ -16,9 +13,9 @@ $pxyauth.Proxy.Credentials = [System.Net.CredentialCache]::DefaultNetworkCredent
 #Set APIKey
 $token = Get-Content <path to file with VT API key>
 
-if ($ip) {
+if ($PSCmdlet.ParameterSetName -eq 'ip') {
     #Set URL with IOC
-    $final_uri = https://www.virustotal.com/api/v3/search?query=$ip
+    $final_uri = "https://www.virustotal.com/api/v3/search?query=$ip"
     
     #Create Splat
         $ipParams = @{
@@ -33,9 +30,9 @@ if ($ip) {
     $response.data.attributes.last_analysis_results
 }
 
-elseif ($domain) {
+elseif ($PSCmdlet.ParameterSetName -eq 'domain') {
     #Set URL with IOC
-    $final_uri = https://www.virustotal.com/api/v3/search?query=$domain
+    $final_uri = "https://www.virustotal.com/api/v3/search?query=$domain"
 
     #Create Splat
         $domainParams = @{
@@ -50,9 +47,9 @@ elseif ($domain) {
     $response.data.attributes.last_analysis_results
 }
 
-elseif ($hash) {
+elseif ($PSCmdlet.ParameterSetName -eq 'hash') {
     #Set URL with IOC
-    $final_uri = https://www.virustotal.com/api/v3/search?query=$hash
+    $final_uri = "https://www.virustotal.com/api/v3/search?query=$hash"
 
     #Create Splat
         $hashParams = @{
