@@ -4,8 +4,8 @@ Starting point for using PoSH for Virustotal using the v3 endpoint. May not be t
 
 Basic use of this script is via arguments passed to it. For example:
 - Searching IP(s): vt.ps1 -ip [ip1],[ip2],[ipN]
-- Searching Domain(s): vt.ps1 -ip [domain1],[domain2],[domainN]
-- Searching Hash(es): vt.ps1 -ip [hash1],[hash2],[hashN]
+- Searching Domain (only supports just one value at this time): vt.ps1 -domain [domain1]
+- Searching Hash (only supports just one value at this time): vt.ps1 -hash [hash1]
 
 Jan 28, 2023 Update
 - Added support for multiple IPs as comma seperated values.
