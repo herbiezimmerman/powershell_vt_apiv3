@@ -1,9 +1,17 @@
 [CmdletBinding()]
-    param (
-        [Parameter(Mandatory=$False,ParameterSetName = 'ip')][string[]]$ip,
-        [Parameter(Mandatory=$False,ParameterSetName = 'domain')][string[]]$domain,
-        [Parameter(Mandatory=$False,ParameterSetName = 'hash')][string[]]$hash
-    )
+param (
+    [Parameter(Mandatory=$False, ParameterSetName='ip')]
+    [string[]]$ip,
+
+    [Parameter(Mandatory=$False, ParameterSetName='domain')]
+    [string[]]$domain,
+
+    [Parameter(Mandatory=$False, ParameterSetName='hash')]
+    [string[]]$hash
+)
+
+# Initialize the array to store results for each domain
+$results = @()
 
 #Set up proxy auth
 $pxyauth = new-object System.Net.WebClient
@@ -106,20 +114,32 @@ if ($PSCmdlet.ParameterSetName -eq 'ip')
 }
 
 elseif ($PSCmdlet.ParameterSetName -eq 'domain') {
-    #Set URL with IOC
-    $final_uri = "https://www.virustotal.com/api/v3/search?query=$domain"
+    foreach ($d in $domain) {
+        #Set URL with IOC
+        $final_uri = "https://www.virustotal.com/api/v3/search?query=$d"
 
-    #Create Splat
+        #Create Splat
         $domainParams = @{
-        "Uri" = $final_uri
-           "Method" = 'GET'
-           "Headers" = @{
-                 "Content-Type" = 'application/json'
-                 "x-apikey" = $token
-           }}
+            "Uri" = $final_uri
+            "Method" = 'GET'
+            "Headers" = @{
+                "Content-Type" = 'application/json'
+                "x-apikey" = $token
+            }
+        }
 
-    $response = Invoke-RestMethod @domainParams
-    $response.data.attributes.last_analysis_results
+        $response = Invoke-RestMethod @domainParams
+
+        # Create a custom object to store the results for each domain
+        $domainResult = [PSCustomObject]@{
+            Domain = $d
+            LastAnalysisResults = $response.data.attributes.last_analysis_results
+            # Add more properties as needed
+        }
+
+        # Add the custom object to the $results array
+        $results += $domainResult
+    }
 }
 
 elseif ($PSCmdlet.ParameterSetName -eq 'hash') {
@@ -142,3 +162,38 @@ elseif ($PSCmdlet.ParameterSetName -eq 'hash') {
 else {
     write-host -ForegroundColor Yellow 'Invalid input. Script will exit now'
     exit}
+
+# Function to write text in bold
+function Write-BoldText {
+    param (
+        [string]$Text
+    )
+    $color = $host.UI.RawUI.ForegroundColor
+    $host.UI.RawUI.ForegroundColor = 'Green'
+    Write-Host $Text
+    $host.UI.RawUI.ForegroundColor = $color
+}
+
+# Display results for each domain
+foreach ($result in $results) {
+    Write-BoldText "Results for domain: $($result.Domain)"
+    Write-Host '-------------------------------------------------'
+
+    if ($result.LastAnalysisResults.Count -eq 0) {
+        Write-Host "No analysis results available for this domain."
+    }
+    else {
+        foreach ($analysis in $result.LastAnalysisResults.PSObject.Properties) {
+            $vendor = $analysis.Name
+            $resultInfo = $analysis.Value
+
+            Write-Host "Vendor: $vendor"
+            Write-Host "Category: $($resultInfo.Category)"
+            Write-Host "Result: $($resultInfo.Result)"
+            Write-Host "Method: $($resultInfo.Method)"
+            Write-Host '-------------------------------------------------'
+        }
+    }
+    
+    Write-Host ''
+}

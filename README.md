@@ -8,5 +8,8 @@ Basic use of this script is via arguments passed to it. For example:
 - Searching Hash (only supports just one value at this time): vt.ps1 -hash [hash1]
 
 Jan 28, 2023 Update
-- Added support for multiple IPs as comma seperated values.
+- Added support for multiple IPs as comma separated values.
 - Did more formatting of the text for readability.
+
+August 5, 2023 Update
+- Added support for multiple Domains as comma separated values.
